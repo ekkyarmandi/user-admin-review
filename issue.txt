@@ -1,0 +1,1 @@
+• I do not know what kind of A1 encryption algorithm required to be used in this project. So I just use my favorit encryption library for example base64.
