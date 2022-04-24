@@ -1,13 +1,14 @@
 from User import User
 from Course import Course
 from Instructor import Instructor
+from Student import Student
+from Review import Review
 import re
 import os
 
-from pprint import pprint
 
-def find(text):
-    c = re.search('\"items\"',text).end()
+def find(text,keyword):
+    c = re.search('\"'+keyword+'\"',text).end()
     brackets = re.finditer('\[|\]',text[c:])
     ob,cb,j = -1,-1,""
     for b in brackets:
@@ -27,6 +28,7 @@ def find(text):
 class Admin(User):
 
     def register_admin(self):
+        '''Register admin'''
 
         # read user_admin.txt file
         with open('sources/user_admin.txt','r') as f:
@@ -65,7 +67,7 @@ class Admin(User):
         for u in units:
 
             # find items keyword including it's courses
-            items = find(text[u.end():])
+            items = find(text[u.end():],keyword='item')
             for i in items:
 
                 # find course
@@ -90,10 +92,78 @@ class Admin(User):
                     print(course,file=f)
 
     def extract_review_info(self):
-        pass
+        '''Extract all reviews from review_data folder'''
+        
+        # look for json files inside review_data folder
+        reviews = []
+        root = 'data/review_data/'
+        for root,_,files in os.walk(root):
+            for file in files:
+                if file.endswith('json'):
+                    file_path = root+file
+                    course_id, _ = os.path.splitext(file)
+
+                    # read the review json file
+                    with open(file_path,encoding='utf-8') as f:
+                        text = f.read()
+
+                        # find course review
+                        try: results = find(text,keyword='results')
+                        except: results = None
+                        if results != None:
+                            for result in results:
+                                if "course_review" == result['_class']:
+                                    review = Review(
+                                        id=str(result['id']),
+                                        content=result['content'],
+                                        rating=str(result['rating']),
+                                        course_id=str(course_id)
+                                    )
+                                    reviews.append(review)
+
+        # write out reviews into review.txt
+        with open('data/course_data/review.txt','w',encoding='utf-8') as f:
+            for review in reviews:
+                print(review,file=f)
 
     def extract_student_info(self):
-        pass
+        
+        students = []
+        root = 'data/review_data/'
+        for root,_,files in os.walk(root):
+            for file in files:
+                if file.endswith('json'):
+                    file_path = root+file
+
+                    # read the review json file
+                    with open(file_path,encoding='utf-8') as f:
+                        text = f.read()
+
+                        # find student as reviewers
+                        try: results = find(text,keyword='results')
+                        except: results = None
+                        if results != None:
+                            for result in results:
+                                if "course_review" == result['_class']:
+                                    user = result['user']
+                                    if 'user' == user['_class']:
+                                        try: user_id = user['id']
+                                        except: user_id = self.generate_unique_user_id()
+                                        student = Student(
+                                            id=str(user['id']),
+                                            username=user['display_name'].replace('.','').replace(' ','_').lower(),
+                                            password="".join(["***"+p+"---" for p in str(user['id'])]),
+                                            title=user['title'],
+                                            image_50x50=user['image_50x50'],
+                                            initials=user['initials'],
+                                            review_id=str(result['id'])
+                                        )
+                                        students.append(student)
+
+        # write out reviews into review.txt
+        with open('data/user_student.txt','w',encoding='utf-8') as f:
+            for student in students:
+                print(student,file=f)
 
     def extract_instructor_info(self):
         '''Extract instructor list from raw_data.txt and write it out to user_instructor.txt'''
@@ -109,7 +179,7 @@ class Admin(User):
         for u in units:
 
             # find items keyword including it's courses
-            items = find(text[u.end():])
+            items = find(text[u.end():],keyword='item')
             for i in items:
 
                 # find instructor
@@ -145,16 +215,33 @@ class Admin(User):
                 print(instructor,file=f)
 
     def extract_info(self):
-        pass
+        '''Extract all information including course, instructors, student, and reviews data.'''
+        self.extract_course_info()
+        self.extract_instructor_info()
+        self.extract_review_info()
+        self.extract_student_info()
 
     def remove_data(self):
-        pass
+        '''Clear data for course.txt, review.txt, user_student.txt, and user_instructor.txt'''
+        
+        # define file's path
+        text_files = [
+            'data/course_data/course.txt',
+            'data/course_data/review.txt',
+            'data/user_student.txt',
+            'data/user_instructor.txt',
+        ]
+
+        # write empty string into it
+        for file in text_files:
+            with open(file,'w') as f:
+                f.write('')
 
     def view_courses(self, **args):
         pass
 
     def view_users(self):
-        ''' Count admins, instructors, and students users account. '''
+        ''' Count numbers of admins, instructors, and students users account. '''
 
         # prepare users object
         root = 'data'
@@ -192,4 +279,4 @@ class Admin(User):
 if __name__ == '__main__':
 
     admin = Admin(username='admin', password='admin')
-    admin.view_users()
+    admin.extract_student_info()

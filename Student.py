@@ -30,11 +30,11 @@ class Student(User):
     def __str__(self):
         '''Object in string format'''
         return ";;;".join([
-            str(self.id),
+            self.id,
             self.username,
             self.password,
             self.title,
             self.image_50x50,
             self.initials,
-            str(self.review_id)
+            self.review_id
         ])
