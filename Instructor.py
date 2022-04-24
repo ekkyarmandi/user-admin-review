@@ -38,5 +38,5 @@ class Instructor(User):
             self.display_name,
             self.job_title,
             self.image_100x100,
-            self.course_id_list
+            "--".join(self.course_id_list)
         ])

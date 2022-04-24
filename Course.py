@@ -41,5 +41,5 @@ class Course:
             self.course_headline,
             str(self.course_num_subscribers),
             str(self.course_avg_rating),
-            str(round(self.course_content_length,2)),
+            self.course_content_length,
         ])
