@@ -53,9 +53,10 @@ class Admin(User):
                     break
 
     def extract_course_info(self):
+        '''Extract course list from raw_data.txt and write it into course.txt'''
 
         # open raw_data.txt
-        with open('data/course_data/raw_data.txt') as f:
+        with open('data/course_data/raw_data.txt',encoding='utf-8') as f:
             text = f.read()
 
         # find units keyword in raw_data.txt
@@ -70,20 +71,23 @@ class Admin(User):
                 # find course
                 if i['_class'] == "course":
                     course = Course(
-                        course_id=i['id'],
-                        course_title=i['title'],
-                        course_image_100x100=i['image_100x100'],
-                        course_headline=i['headline'],
-                        course_num_subscribers=i['num_subscribers'],
-                        course_avg_rating=round(i['avg_rating'],2),
-                        course_content_length=re.search('[0-9.]+',i['content_info']).group()
+                        id=i['id'],
+                        title=i['title'],
+                        image_100x100=i['image_100x100'],
+                        headline=i['headline'],
+                        num_subscribers=i['num_subscribers'],
+                        avg_rating=round(i['avg_rating'],2),
+                        content_length=re.search('[0-9.]+',i['content_info']).group()
                     )
                     courses.append(course)
 
         # write out courses into course.txt
+        existing_course = []
         with open('data/course_data/course.txt','w',encoding='utf-8') as f:
             for course in courses:
-                print(course,file=f)
+                if course.id not in existing_course:
+                    existing_course.append(course.id)
+                    print(course,file=f)
 
     def extract_review_info(self):
         pass
@@ -92,14 +96,15 @@ class Admin(User):
         pass
 
     def extract_instructor_info(self):
+        '''Extract instructor list from raw_data.txt and write it out to user_instructor.txt'''
         
         # open raw_data.txt
-        with open('data/course_data/raw_data.txt') as f:
+        with open('data/course_data/raw_data.txt',encoding='utf-8') as f:
             text = f.read()
 
         # find units keyword in raw_data.txt
         instructors = []
-        temp = {}
+        uniques = []
         units = re.finditer('\"unit\"',text)
         for u in units:
 
@@ -112,33 +117,29 @@ class Admin(User):
                     for k in i['visible_instructors']:
                         if k['_class'] == 'user':
 
-                            # collect unique instructor
-                            users = [k for k in temp.keys()]
-                            if k['id'] not in users:
-                                temp.update({k['id']: [str(i['id'])]})
-                            elif k['id'] in users:
-                                temp[k['id']].append(str(i['id']))
-
-                            # collect instructor data in more detail
+                            # collect instructor data
                             instructor = Instructor(
-                                user_id=k['id'],
+                                id=k['id'],
                                 username=k['display_name'].replace(" ","_").replace(".","").lower(),
-                                password=self.encryption(k['id']),
+                                password="".join(["***"+p+"---" for p in str(k['id'])]),
                                 display_name=k['display_name'],
                                 job_title=k['job_title'],
-                                image_100x100=k['image_100x100']
+                                image_100x100=k['image_100x100'],
+                                course_id_list=[str(i['id'])]
                             )
-                            instructors.append(instructor)
-            
-        uniques = []
-        for p in temp:
-            for q in instructors:
-                if p == q.user_id:
-                    if q.user_id not in uniques:
-                        q.course_id_list.extend(temp[p])
-                        instructors.append(q)
-                        uniques.append(q.user_id)
 
+                            # check the unique instructor id
+                            if instructor.id not in uniques:
+                                uniques.append(instructor.id)
+                                instructors.append(instructor)
+                            elif instructor.id in uniques:
+
+                                # append course id for which instructor take
+                                for idx,q in enumerate(instructors):
+                                    if q.id == instructors[idx].id and i['id'] not in q.course_id_list:
+                                        instructors[idx].course_id_list.append(str(i['id']))
+
+        # write out instructor data
         with open('data/user_instructor.txt','w',encoding='utf-8') as f:
             for instructor in instructors:
                 print(instructor,file=f)
@@ -153,28 +154,37 @@ class Admin(User):
         pass
 
     def view_users(self):
-        '''
-        Count for the number of users including admins, instructors, and students.
-        '''
-        root = 'sources'
+        ''' Count admins, instructors, and students users account. '''
+
+        # prepare users object
+        root = 'data'
         text_files = {
-            'Admin': os.path.join(root,'user_admin.txt'),
-            'Student': os.path.join(root,'user_student.txt'),
-            'Instructor': os.path.join(root,'user_instructor.txt')
+            'Admin': {
+                'path': os.path.join(root,'user_admin.txt'),
+                'count': 0
+            },
+            'Student': {
+                'path': os.path.join(root,'user_student.txt'),
+                'count': 0
+            },
+            'Instructor': {
+                'path': os.path.join(root,'user_instructor.txt'),
+                'count': 0
+            }
         }
-        count = {
-            'Admin': 0,
-            'Student': 0,
-            'Instructor': 0
-        }
-        for p,f in text_files.items():
-            with open(f) as fr:
+        
+        # count the lines for each text file
+        for user in text_files:
+            with open(text_files[user]['path'],encoding='utf-8') as fr:
                 lines = fr.read().split('\n')
                 for c in lines:
                     if c != "":
-                        count[p] += 1
-        for j in count:
-            print(f'Total number of {j.lower()}: {int(count[j])}')
+                        text_files[user]['count'] += 1
+        
+        # printout the results
+        for user in text_files:
+            count = text_files[user]['count']
+            print(f'Total number of {user.lower()}: {int(count)}')
 
     def view_reviews(self, **args):
         pass
@@ -182,4 +192,4 @@ class Admin(User):
 if __name__ == '__main__':
 
     admin = Admin(username='admin', password='admin')
-    admin.extract_instructor_info()
+    admin.view_users()

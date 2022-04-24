@@ -1,24 +1,24 @@
 
 class Course:
     
-    def __init__(self, course_id=-1, course_title="", course_image_100x100="", course_headline="", course_num_subscribers=-1, course_avg_rating=-1, course_content_length=-1.0):
+    def __init__(self, id=-1, title="", image_100x100="", headline="", num_subscribers=-1, avg_rating=-1, content_length=-1.0):
         '''
         Course constructor
-        :param course_id: int, default value -1
-        :param course_title: str, defaul value "" (empty string)
-        :param course_image_100x100: str, defaul value "" (empty string)
-        :param course_headline: str, defaul value "" (empty string)
-        :param course_num_subscribers: int, default value -1
-        :param course_avg_rating: int, default value -1
-        :param course_content_length: float, default value -1.0
+        :param id: int, default value -1
+        :param title: str, defaul value "" (empty string)
+        :param image_100x100: str, defaul value "" (empty string)
+        :param headline: str, defaul value "" (empty string)
+        :param num_subscribers: int, default value -1
+        :param avg_rating: int, default value -1
+        :param content_length: float, default value -1.0
         '''
-        self.course_id = course_id
-        self.course_title = course_title
-        self.course_image_100x100 = course_image_100x100
-        self.course_headline = course_headline
-        self.course_num_subscribers = course_num_subscribers
-        self.course_avg_rating = course_avg_rating
-        self.course_content_length = course_content_length
+        self.id = id
+        self.title = title
+        self.image_100x100 = image_100x100
+        self.headline = headline
+        self.num_subscribers = num_subscribers
+        self.avg_rating = avg_rating
+        self.content_length = content_length
     
     def find_course_by_title_keyword(self, keyword):
         pass
@@ -30,16 +30,19 @@ class Course:
         pass
     
     def course_overview(self):
-        pass # count the course
+        '''Read course.txt and count it'''
+        with open('data/course_data/course.txt',encoding='utf-8') as f:
+            courses = f.read().split("\n")
+            print('The total number of course is',len(courses))
     
     def __str__(self):
         '''Object in string format'''
         return ";;;".join([
-            str(self.course_id),
-            self.course_title,
-            self.course_image_100x100,
-            self.course_headline,
-            str(self.course_num_subscribers),
-            str(self.course_avg_rating),
-            self.course_content_length,
+            str(self.id),
+            self.title,
+            self.image_100x100,
+            self.headline,
+            str(self.num_subscribers),
+            str(self.avg_rating),
+            self.content_length,
         ])
