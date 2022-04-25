@@ -49,14 +49,58 @@ class User:
 		'''
 		return base64.b64encode(bytes(password,encoding='utf-8')).decode()
 
-	def login(self):
-		pass
+	def login(self, username, password):
+		'''
+		Pass application authenticantion		
+		:param username: str
+		:param password: str
+		:return login_result, login_user_role, login_user_info: tuple
+		'''
+		
+		# read all user text file
+		text_files = {
+			'Admin': {
+				'path': 'data/user_admin.txt'
+			},
+			'Instructor': {
+				'path': 'data/user_instructor.txt'
+			},
+			'Student': {
+				'path': 'data/user_student.txt'
+			}
+		}
+
+		# look for the right user
+		for role in text_files:
+			with open(text_files[role]['path'],'r',encoding='utf-8') as f:
+				registered_user = f.read().strip().split('\n')
+				
+				if role == 'Admin':
+					password = self.encryption(password)
+					for reg in registered_user:
+						user = {
+							"username": reg.split(';;;')[1],
+							"password": reg.split(';;;')[2],
+						}
+						if user['username'] == username and user['password'] == password:
+							return True, role, reg
+
+				elif role in ['Instructor','Student']:
+					for reg in registered_user:
+						user = {
+							"username": reg.split(';;;')[1],
+							"password": reg.split(';;;')[0],
+						}
+						if user['username'] == username and user['password'] == password:
+							return True, role, reg
+
+		return False, None, None
 
 	def extract_info(self):
 		'''Default user extract info message'''
 		print('You have no premission to extract information.')
 
-	def view_courses(self,**args):
+	def view_courses(self, *args):
 		'''Default user view courses message'''
 		print('You have no permission to view courses')
 
@@ -64,7 +108,7 @@ class User:
 		'''Default user view users message'''
 		print('You have no permission to view users')
 
-	def view_reviews(self,**args):
+	def view_reviews(self, *args):
 		'''Default user view reviews message'''
 		print('You have no permission to view reviews')
 
