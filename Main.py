@@ -6,12 +6,19 @@ from Student import Student
 from Review import Review
 
 def show_menu():
-    pass
-
+    msg = [
+        'Please enter {} command for further service:',
+        '1. EXTRACT_DATA',
+        '2. VIEW_COURSES',
+        '3. VIEW_USERS',
+        '4. VIEW_REVIEWS',
+        '5. REMOVE_DATA\n'
+    ]
+    for m in msg:
+        print(m)
 
 def process_operations():
     pass
-
 
 def main():
     pass
@@ -63,3 +70,5 @@ if __name__ == "__main__":
             initials=result[2].split(";;;")[5],
             review_id=result[2].split(";;;")[6]
         )
+
+    print(user)

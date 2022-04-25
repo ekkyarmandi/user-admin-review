@@ -3,7 +3,7 @@ import random
 
 class User:
 
-	def __init__(self, username="", password="", user_id=-1):
+	def __init__(self, username="", password="", id=-1):
 		'''
 		User constructor
 		:param user_id: int, default value -1
@@ -11,7 +11,7 @@ class User:
 		:param password: str, default value "" (empty string)
 		:return: None
 		'''
-		self.user_id = user_id
+		self.id = id
 		self.username = username
 		self.password = self.encryption(password)
 
@@ -118,4 +118,4 @@ class User:
 
 	def __str__(self):
 		'''Object in string format'''
-		return ";;;".join([str(self.user_id),self.username,self.password])
+		return ";;;".join([str(self.id),self.username,self.password])
