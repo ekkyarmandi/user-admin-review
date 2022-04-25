@@ -1,4 +1,5 @@
 import base64
+import random
 
 class User:
 
@@ -19,26 +20,26 @@ class User:
 
 		# collect id from all registered users
 		content = []
-		text_files = ['user_admin.txt','user_student.txt','user_instructor.txt']
+		text_files = [
+			'data/user_admin.txt',
+			'data/user_student.txt',
+			'data/user_instructor.txt'
+		]
 		for file in text_files:
-			with open(file,'r') as f:
+			with open(file,'r',encoding='utf-8') as f:
 				text = f.read().split('\n')
 				content.extend(text)
 		ids = []
 		for c in content:
 			if c.strip() != "":
-				existing_id = c.strip().split('|')[0]
-				ids.append(existing_id.strip('0'))
-		ids = [int(id) for id in ids]
-		ids = sorted(ids)
+				existing_id = c.strip().split(';;;')[0]
+				ids.append(existing_id)
 		
-		# find a new unique id for new user
-		i = 1
-		while True:
-			
-			# return if find a unique one
-			if i not in ids:
-				return '{:010d}'.format(i)
+		# find a new unique id
+		new_id = random.choice(ids)
+		while new_id in ids:
+			new_id = "".join([str(random.randint(0,9)) for _ in range(10)])
+		return new_id
 
 	def encryption(self,password):
 		'''

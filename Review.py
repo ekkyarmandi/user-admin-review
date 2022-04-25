@@ -23,7 +23,10 @@ class Review:
         pass
 
     def reviews_overview(self):
-        pass # count the total number of reviews
+        '''Read review.txt and count it'''
+        with open('data/course_data/review.txt',encoding='utf-8') as f:
+            courses = f.read().split("\n")
+            print('The total number of review is',len(courses))
 
     def __str__(self):
         '''Object in string format'''
