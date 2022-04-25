@@ -23,10 +23,10 @@ class Instructor(User):
         self.image_100x100 = image_100x100
         self.course_id_list = course_id_list
 
-    def view_courses(self, **args):
+    def view_courses(self, *args):
         pass
 
-    def view_reviews(self, **args):
+    def view_reviews(self, *args):
         pass
 
     def __str__(self):

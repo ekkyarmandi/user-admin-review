@@ -21,10 +21,10 @@ class Student(User):
         self.initials = initials
         self.review_id = review_id
 
-    def view_courses(self, **args):
+    def view_courses(self, *args):
         pass
 
-    def view_reviews(self, **args):
+    def view_reviews(self, *args):
         pass
 
     def __str__(self):
