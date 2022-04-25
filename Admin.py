@@ -1,4 +1,3 @@
-from soupsieve import select
 from User import User
 from Course import Course
 from Instructor import Instructor
@@ -10,7 +9,7 @@ import os
 
 def find(text,keyword):
     c = re.search('\"'+keyword+'\"',text).end()
-    brackets = re.finditer('\[|\]',text[c:])
+    brackets = re.finditer('[|]',text[c:])
     ob,cb,j = -1,-1,""
     for b in brackets:
         if b.group() == "[":
@@ -68,7 +67,7 @@ class Admin(User):
         for u in units:
 
             # find items keyword including it's courses
-            items = find(text[u.end():],keyword='item')
+            items = find(text[u.end():],keyword='items')
             for i in items:
 
                 # find course
@@ -139,6 +138,7 @@ class Admin(User):
             '''
             return user.initials.lower() + user.id + user.initials.lower()
         
+        # crawl for json files
         students = []
         root = 'data/review_data/'
         for root,_,files in os.walk(root):
@@ -194,7 +194,7 @@ class Admin(User):
     def extract_instructor_info(self):
         '''Extract instructor list from raw_data.txt and write it out to user_instructor.txt'''
         
-        # open raw_data.txt
+        # read raw_data.txt
         with open('data/course_data/raw_data.txt',encoding='utf-8') as f:
             text = f.read()
 
@@ -208,32 +208,28 @@ class Admin(User):
             items = find(text[u.end():],keyword='items')
             for i in items:
 
-                # find instructor
+                # collect instructor data
                 if i['_class'] == "course":
                     for k in i['visible_instructors']:
                         if k['_class'] == 'user':
-
-                            # collect instructor data
-                            instructor = Instructor(
-                                id=k['id'],
-                                username=k['display_name'].replace(" ","_").replace(".","").lower(),
-                                password="".join(["***"+p+"---" for p in str(k['id'])]),
-                                display_name=k['display_name'],
-                                job_title=k['job_title'],
-                                image_100x100=k['image_100x100'],
-                                course_id_list=[str(i['id'])]
-                            )
-
-                            # check the unique instructor id
-                            if instructor.id not in uniques:
-                                uniques.append(instructor.id)
+                            user_id = k['id']
+                            if user_id not in uniques:
+                                instructor = Instructor(
+                                    id=k['id'],
+                                    username=k['display_name'].replace(" ","_").replace(".","").lower(),
+                                    password="".join(["***"+p+"---" for p in str(k['id'])]),
+                                    display_name=k['display_name'],
+                                    job_title=k['job_title'],
+                                    image_100x100=k['image_100x100'],
+                                    course_id_list=[str(i['id'])]
+                                )
                                 instructors.append(instructor)
-
-                            # append course id for which instructor take
-                            elif instructor.id in uniques:
-                                for idx,q in enumerate(instructors):
-                                    if q.id == instructors[idx].id and i['id'] not in q.course_id_list:
-                                        instructors[idx].course_id_list.append(str(i['id']))
+                                uniques.append(user_id)
+                            elif user_id in uniques:
+                                for instructor in instructors:
+                                    if user_id == instructor.id:
+                                        instructor.course_id_list.append(str(i['id']))
+                                        break
 
         # write out instructor data
         with open('data/user_instructor.txt','w',encoding='utf-8') as f:
@@ -276,6 +272,7 @@ class Admin(User):
         '''
 
 
+        # filtered by input
         if len(args) == 2:
 
             if args[0] in ['TITLE_KEYWORD','ID','INSTRUCTOR_ID']:
@@ -316,7 +313,7 @@ class Admin(User):
                 count = 0
                 if args[0] == 'TITLE_KEYWORD':
                     for course in courses:
-                        if args[1] in course.title.lower():
+                        if args[1].lower() in course.title.lower():
                             count += 1
                             print(course)
                     print('total returned course:',count)
@@ -352,8 +349,71 @@ class Admin(User):
             course = Course()
             course.course_overview()
 
-    def view_reviews(self, **args):
-        pass
+    def view_reviews(self, *args):
+        '''
+        Returned requested reviews
+
+        usage: args=[command,value]
+        i.e. ['KEYWORD','nice']
+        allowed commands = ID, KEYWORD, or COURSE_ID
+
+        :param args: list, [command,value]
+        '''
+
+
+        # filtered by input
+        if len(args) == 2:
+
+            if args[0] in ['ID','KEYWORD','COURSE_ID']:
+
+                # read review.txt
+                with open('data/course_data/review.txt','r',encoding='utf-8') as f:
+                    raw_reviews = f.read().strip().split('\n')
+                    reviews = []
+                    for raw in raw_reviews:
+                        review = Review(
+                            id=str(raw.split(';;;')[0]),
+                            content=raw.split(';;;')[1],
+                            rating=str(raw.split(';;;')[2]),
+                            course_id=str(raw.split(';;;')[3])
+                        )
+                        reviews.append(review)
+                
+                # returned course and it's count based on query
+                count = 0
+                if args[0] == 'ID':
+                    for review in reviews:
+                        if args[1] in review.id:
+                            count += 1
+                            print(review)
+                    print('total returned review:',count)
+
+                elif args[0] == 'KEYWORD':
+                    for review in reviews:
+                        if args[1].lower() in review.content.lower():
+                            count += 1
+                            print(review)
+                    print('total returned review:',count)
+
+                elif args[0] == 'COURSE_ID':
+                    for review in reviews:
+                        if args[1] in review.course_id:
+                            count += 1
+                            print(review)
+                    print('total returned review:',count)
+
+            else:
+                # error message if user didn't type any command
+                print('Please type the proper command i.e. ID, KEYWORD, or COURSE_ID')
+
+        # error message if user didn't type any command or value
+        elif len(args) == 1:
+            print('Make sure you also include command/value on the input')
+
+        # error message if user didn't type anything and return course overview instead
+        elif len(args) == 0:
+            review = Review()
+            review.reviews_overview()
 
     def view_users(self):
         ''' Count numbers of admins, instructors, and students users account. '''
@@ -387,8 +447,3 @@ class Admin(User):
         for user in text_files:
             count = text_files[user]['count']
             print(f'Total number of {user.lower()}: {int(count)}')
-
-if __name__ == '__main__':
-
-    admin = Admin(username='admin', password='admin')
-    admin.view_courses('INSTRUCTOR_ID','4466306')
