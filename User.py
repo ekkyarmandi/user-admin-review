@@ -76,13 +76,13 @@ class User:
 				registered_user = f.read().strip().split('\n')
 				
 				if role == 'Admin':
-					password = self.encryption(password)
+					admin_password = self.encryption(password)
 					for reg in registered_user:
 						user = {
 							"username": reg.split(';;;')[1],
 							"password": reg.split(';;;')[2],
 						}
-						if user['username'] == username and user['password'] == password:
+						if user['username'] == username and user['password'] == admin_password:
 							return True, role, reg
 
 				elif role in ['Instructor','Student']:
@@ -98,23 +98,23 @@ class User:
 
 	def extract_info(self):
 		'''Default user extract info message'''
-		print('You have no premission to extract information.')
+		print('You have no premission to extract information\n')
 
 	def view_courses(self, *args):
 		'''Default user view courses message'''
-		print('You have no permission to view courses')
+		print('You have no permission to view courses\n')
 
 	def view_users(self):
 		'''Default user view users message'''
-		print('You have no permission to view users')
+		print('You have no permission to view users\n')
 
 	def view_reviews(self, *args):
 		'''Default user view reviews message'''
-		print('You have no permission to view reviews')
+		print('You have no permission to view reviews\n')
 
 	def remove_data(self):
 		'''Default user remove data message'''
-		print('You have no permission to remove data')
+		print('You have no permission to remove data\n')
 
 	def __str__(self):
 		'''Object in string format'''
