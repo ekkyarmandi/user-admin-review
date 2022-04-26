@@ -9,7 +9,7 @@ import os
 
 def find(text,keyword):
     c = re.search('\"'+keyword+'\"',text).end()
-    brackets = re.finditer('[|]',text[c:])
+    brackets = re.finditer('\[|\]',text[c:])
     ob,cb,j = -1,-1,""
     for b in brackets:
         if b.group() == "[":
@@ -271,9 +271,12 @@ class Admin(User):
         :param args: list, [command,value]
         '''
 
+        
+        # count args
+        trues = [True if p != "" else False for p in args]
 
         # filtered by input
-        if len(args) == 2:
+        if sum(trues) == 2:
 
             if args[0] in ['TITLE_KEYWORD','ID','INSTRUCTOR_ID']:
 
@@ -316,14 +319,12 @@ class Admin(User):
                         if args[1].lower() in course.title.lower():
                             count += 1
                             print(course)
-                    print('total returned course:',count)
 
                 elif args[0] == 'ID':
                     for course in courses:
                         if args[1] == course.id:
                             count += 1
                             print(course)
-                    print('total returned course:',count)
 
                 elif args[0] == 'INSTRUCTOR_ID':
                     for instructor in instructors:
@@ -334,18 +335,20 @@ class Admin(User):
                                     count += 1
                                     print(course)
                             break
-                    print('total returned course:',count)
+                
+                # printout total numbers
+                print('total returned course: ' + str(count) + '\n')
 
             else:
                 # error message if user didn't type any command
-                print('Please type the proper command i.e. TITLE_KEYWORD, ID, or INSTRUCTOR_ID')
+                print('Please type the proper command 2 [TITLE_KEYWORD/ID/INSTRUCTOR_ID] [value]\n')
 
         # error message if user didn't type any command or value
-        elif len(args) == 1:
-            print('Make sure you also include command/value on the input')
+        elif sum(trues) == 1:
+            print('Make sure you also include command/value on the input\n')
 
         # error message if user didn't type anything and return course overview instead
-        elif len(args) == 0:
+        elif sum(trues) == 0:
             course = Course()
             course.course_overview()
 
@@ -360,9 +363,11 @@ class Admin(User):
         :param args: list, [command,value]
         '''
 
+        # count args
+        trues = [True if p != "" else False for p in args]
 
         # filtered by input
-        if len(args) == 2:
+        if sum(trues) == 2:
 
             if args[0] in ['ID','KEYWORD','COURSE_ID']:
 
@@ -386,32 +391,32 @@ class Admin(User):
                         if args[1] in review.id:
                             count += 1
                             print(review)
-                    print('total returned review:',count)
 
                 elif args[0] == 'KEYWORD':
                     for review in reviews:
                         if args[1].lower() in review.content.lower():
                             count += 1
                             print(review)
-                    print('total returned review:',count)
 
                 elif args[0] == 'COURSE_ID':
                     for review in reviews:
                         if args[1] in review.course_id:
                             count += 1
                             print(review)
-                    print('total returned review:',count)
+                
+                # printout counted reviews
+                print('total returned review: ' + str(count) + '\n')
 
             else:
                 # error message if user didn't type any command
-                print('Please type the proper command i.e. ID, KEYWORD, or COURSE_ID')
+                print('Please type the proper command 4 [ID, KEYWORD, or COURSE_ID] [value]\n')
 
-        # error message if user didn't type any command or value
-        elif len(args) == 1:
-            print('Make sure you also include command/value on the input')
+        # error message if user didn't input any value
+        elif sum(trues) == 1:
+            print('Make sure you also include value on the input\n')
 
         # error message if user didn't type anything and return course overview instead
-        elif len(args) == 0:
+        elif sum(trues) == 0:
             review = Review()
             review.reviews_overview()
 
@@ -447,3 +452,4 @@ class Admin(User):
         for user in text_files:
             count = text_files[user]['count']
             print(f'Total number of {user.lower()}: {int(count)}')
+        print()

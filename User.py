@@ -13,7 +13,7 @@ class User:
 		'''
 		self.id = id
 		self.username = username
-		self.password = self.encryption(password)
+		self.password = password
 
 	def generate_unique_user_id(self):
 		'''Generate unique id for new registered user'''
@@ -118,4 +118,8 @@ class User:
 
 	def __str__(self):
 		'''Object in string format'''
-		return ";;;".join([str(self.id),self.username,self.password])
+		return ";;;".join([
+			str(self.id),
+			self.username,
+			self.encryption(self.password)
+		])

@@ -26,7 +26,7 @@ class Review:
         '''Read review.txt and count it'''
         with open('data/course_data/review.txt',encoding='utf-8') as f:
             courses = f.read().split("\n")
-            print('The total number of review is',len(courses))
+            print('The total number of review is ' + str(len(courses)) + '\n')
 
     def __str__(self):
         '''Object in string format'''
